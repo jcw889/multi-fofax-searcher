@@ -8,6 +8,13 @@ on:
 jobs:
   search:
     runs-on: ubuntu-latest
+    env:
+      FOFA_API_KEY_1: ${{ secrets.FOFA_API_KEY_1 }}
+      FOFA_API_KEY_2: ${{ secrets.FOFA_API_KEY_2 }}
+      FOFA_API_KEY_3: ${{ secrets.FOFA_API_KEY_3 }}
+      FOFA_API_KEY_4: ${{ secrets.FOFA_API_KEY_4 }}
+      FOFA_API_KEY_5: ${{ secrets.FOFA_API_KEY_5 }}
+      FOFA_API_KEY_6: ${{ secrets.FOFA_API_KEY_6 }}
     steps:
     - uses: actions/checkout@v2
 
@@ -19,7 +26,6 @@ jobs:
         
         # 下载最新版本
         wget -O fofax.tar.gz $DOWNLOAD_URL
-        
         # 解压并安装
         tar -zxvf fofax.tar.gz
         sudo mv fofax /usr/local/bin/
