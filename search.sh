@@ -12,14 +12,14 @@ fi
 
 # 读取 API 密钥
 echo "正在读取 API 密钥..."
-api_keys=($(grep 'FOFA_API_KEY_' "$config_file" | cut -d ':' -f2 | tr -d ' '))
+api_keys=($$(grep -oP '(?<=\$${{ secrets.FOFA_API_KEY_)[1-6](?= }})' "$config_file"))
 
 if [ ${#api_keys[@]} -eq 0 ]; then
-    echo "错误：未找到有效的 API 密钥"
+    echo "错误：未找到有效的 API 密钥配置"
     exit 1
 fi
 
-echo "找到 $${#api_keys[@]} 个 API 密钥"
+echo "找到 ${#api_keys[@]} 个 API 密钥配置"
 
 # 查询列表
 queries=(
@@ -31,7 +31,7 @@ queries=(
 )
 
 # 创建输出文件
-output_file="fofa_results_$(date +%Y%m%d_%H%M%S).csv"
+output_file="fofa_results_$$(date +%Y%m%d_%H%M%S).csv"
 echo "ip,port,country,region,city,server,title" > "$output_file"
 
 # 执行查询
@@ -39,12 +39,12 @@ key_index=0
 for query in "${queries[@]}"; do
     echo "正在查询: $query"
     # 选择当前的 API 密钥
-    current_key=${api_keys[$key_index]}
+    current_key="FOFA_API_KEY_${api_keys[$key_index]}"
     
-    echo "使用 API 密钥: ${current_key:0:5}..." # 只显示密钥的前5个字符
+    echo "使用 API 密钥: $current_key"
     
     # 使用当前的 API 密钥执行查询
-    if ! FOFA_KEY="$current_key" fofax -q "$query" -fs 10000 -fi -fields ip,port,country,region,city,server,title | tail -n +2 >> "$output_file"; then
+    if ! FOFA_KEY="${!current_key}" fofax -q "$query" -fs 10000 -fi -fields ip,port,country,region,city,server,title | tail -n +2 >> "$output_file"; then
         echo "查询失败，请检查 API 密钥和网络连接"
         exit 1
     fi
