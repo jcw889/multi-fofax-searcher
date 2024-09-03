@@ -1,14 +1,19 @@
 #!/bin/bash
 
-# 读取配置文件
+# 检查配置文件
 config_file="config.yaml"
 if [ ! -f "$config_file" ]; then
     echo "错误：找不到 config.yaml 文件"
     exit 1
 fi
 
-# 从配置文件中读取 API 密钥
-api_keys=($$(grep -oP '(?<=\$${{ secrets.FOFA_API_KEY_)[1-6](?= }})' "$config_file"))
+# 读取 API 密钥（假设密钥直接写在配置文件中）
+api_keys=($(grep 'FOFA_API_KEY_' "$config_file" | cut -d ':' -f2 | tr -d ' '))
+
+if [ ${#api_keys[@]} -eq 0 ]; then
+    echo "错误：未找到有效的 API 密钥"
+    exit 1
+fi
 
 # 查询列表
 queries=(
@@ -31,11 +36,11 @@ for query in "${queries[@]}"; do
     current_key=${api_keys[$key_index]}
     
     # 使用当前的 API 密钥执行查询
-    FOFA_KEY="${!current_key}" fofax -q "$query" -fs 10000 -fi -fields ip,port,country,region,city,server,title | tail -n +2 >> "$output_file"
+    FOFA_KEY="$$current_key" fofax -q "$query" -fs 10000 -fi -fields ip,port,country,region,city,server,title | tail -n +2 >> "$output_file"
     
     # 切换到下一个 API 密钥
     key_index=$(( (key_index + 1) % ${#api_keys[@]} ))
     sleep 1  # 避免频繁请求
 done
 
-echo "结果已保存到 $$output_file"
+echo "结果已保存到 $output_file"
