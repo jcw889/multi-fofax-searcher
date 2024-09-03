@@ -1,0 +1,29 @@
+name: Daily FoFa Search
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 每天运行一次
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install FoFaX
+      run: |
+        wget https://github.com/xiecat/fofax/releases/download/v0.1.22/fofax_0.1.22_linux_amd64.tar.gz
+        tar -zxvf fofax_0.1.22_linux_amd64.tar.gz
+        sudo mv fofax /usr/local/bin/
+
+    - name: Run search script
+      run: bash search.sh
+
+    - name: Commit results
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add results/
+        git commit -m "Update search results" -a || echo "No changes to commit"
+        git push
