@@ -1,13 +1,11 @@
 #!/bin/bash
 
 set -e
-set -x
 
 echo "脚本开始执行时间: $(date)"
 
 echo "正在设置 API 密钥..."
 api_keys=(1 2 3 4 5 6)
-
 echo "设置了 ${#api_keys[@]} 个 API 密钥配置"
 
 queries=(
@@ -17,10 +15,9 @@ queries=(
     'server=="cloudflare" && port=="443" && country=="KR" && asn!="13335" && asn!="209242"'
     'server=="cloudflare" && port=="443" && country=="US" && asn!="13335" && asn!="209242"'
 )
-
 echo "设置了 ${#queries[@]} 个查询"
 
-output_file="results/fofa_results_$$(date +%Y%m%d_%H%M%S).csv"
+output_file="results/fofa_results_$(date +%Y%m%d_%H%M%S).csv"
 mkdir -p results
 echo "ip,port,country,region,city,server,title" > "$output_file"
 echo "创建了输出文件: $output_file"
@@ -28,15 +25,16 @@ echo "创建了输出文件: $output_file"
 key_index=0
 for query in "${queries[@]}"; do
     echo "正在执行查询: $query"
-    current_key="FOFA_API_KEY_${api_keys[$key_index]}"
+    current_key="FOFA_API_KEY_$${api_keys[$key_index]}"
     echo "使用 API 密钥: $current_key"
+    
     if [ -z "${!current_key}" ]; then
-        echo "错误：API 密钥 $current_key 未设置"
+        echo "错误：API 密钥 $$current_key 未设置"
         exit 1
     fi
     
     echo "执行 fofax 命令..."
-    if ! FOFA_KEY="${!current_key}" fofax -q "$query" -fs 2000 -fields ip,port,country,region,city,server,title | tail -n +2 >> "$output_file"; then          
+    if ! FOFA_KEY="${!current_key}" fofax -q "$query" -fs 1000 -fields ip,port,country,region,city,server,title | tail -n +2 >> "$output_file"; then      
         echo "查询失败，请检查 API 密钥和网络连接"
         exit 1
     fi
