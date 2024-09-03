@@ -8,20 +8,20 @@ on:
 jobs:
   search:
     runs-on: ubuntu-latest
-    steps:
+    steps:  
     - uses: actions/checkout@v2
 
     - name: Install FoFaX
       run: |
-        # 获取最新版本号
-        LATEST_VERSION=$(curl -s https://api.github.com/repos/xiecat/fofax/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-        echo "Latest FoFaX version: $LATEST_VERSION"
+        # 获取最新版本的下载 URL
+        DOWNLOAD_URL=$(curl -s https://api.github.com/repos/xiecat/fofax/releases/latest | grep "browser_download_url.*linux_amd64" | cut -d : -f 2,3 | tr -d \")
+        echo "Download URL: $DOWNLOAD_URL"
         
         # 下载最新版本
-        wget "https://github.com/xiecat/fofax/releases/download/${LATEST_VERSION}/fofax_${LATEST_VERSION#v}_linux_amd64.tar.gz"
+        wget -O fofax.tar.gz $DOWNLOAD_URL
         
         # 解压并安装
-        tar -zxvf "fofax_$${LATEST_VERSION#v}_linux_amd64.tar.gz"
+        tar -zxvf fofax.tar.gz
         sudo mv fofax /usr/local/bin/
         
         # 验证安装
