@@ -3,10 +3,6 @@
 set -e  # 遇到错误立即退出
 set -x  # 打印执行的每一行命令
 
-# 创建日志文件
-log_file="search_log_$(date +%Y%m%d_%H%M%S).txt"
-exec >(tee -a "$log_file") 2>&1
-
 echo "脚本开始执行时间: $(date)"
 
 # 检查配置文件
@@ -36,7 +32,7 @@ queries=(
 echo "设置了 ${#queries[@]} 个查询"
 
 # 创建输出文件
-output_file="fofa_results_$(date +%Y%m%d_%H%M%S).csv"
+output_file="fofa_results_$$(date +%Y%m%d_%H%M%S).csv"
 echo "ip,port,country,region,city,server,title" > "$output_file"
 echo "创建了输出文件: $output_file"
 
@@ -45,7 +41,7 @@ key_index=0
 for query in "${queries[@]}"; do
     echo "正在执行查询: $query"
     # 选择当前的 API 密钥
-    current_key="FOFA_API_KEY_$${api_keys[$key_index]}"
+    current_key="FOFA_API_KEY_${api_keys[$key_index]}"
     
     echo "使用 API 密钥: $current_key"
     
@@ -69,6 +65,6 @@ done
 
 echo "所有查询已完成"
 echo "最终输出文件大小: $(wc -c < "$output_file") 字节"
-echo "结果已保存到 $output_file"
+echo "结果已保存到 $$output_file"
 
 echo "脚本结束执行时间: $(date)"
