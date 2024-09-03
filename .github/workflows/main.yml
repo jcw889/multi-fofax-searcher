@@ -13,9 +13,19 @@ jobs:
 
     - name: Install FoFaX
       run: |
-        wget https://github.com/xiecat/fofax/releases/download/v0.1.22/fofax_0.1.22_linux_amd64.tar.gz
-        tar -zxvf fofax_0.1.22_linux_amd64.tar.gz
+        # 获取最新版本号
+        LATEST_VERSION=$(curl -s https://api.github.com/repos/xiecat/fofax/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+        echo "Latest FoFaX version: $LATEST_VERSION"
+        
+        # 下载最新版本
+        wget "https://github.com/xiecat/fofax/releases/download/${LATEST_VERSION}/fofax_${LATEST_VERSION#v}_linux_amd64.tar.gz"
+        
+        # 解压并安装
+        tar -zxvf "fofax_$${LATEST_VERSION#v}_linux_amd64.tar.gz"
         sudo mv fofax /usr/local/bin/
+        
+        # 验证安装
+        fofax -v
 
     - name: Run search script
       run: bash search.sh
@@ -24,6 +34,6 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add results/
-        git commit -m "Update search results" -a || echo "No changes to commit"
+        git add results/*
+        git commit -m "Update search results" || echo "No changes to commit"
         git push
