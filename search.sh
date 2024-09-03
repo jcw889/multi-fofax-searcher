@@ -30,19 +30,18 @@ for query in "${queries[@]}"; do
     echo "正在执行查询: $query"
     current_key="FOFA_API_KEY_${api_keys[$key_index]}"
     echo "使用 API 密钥: $current_key"
-    api_key_value=$(eval echo \$${current_key})
-    if [ -z "$api_key_value" ]; then
+    if [ -z "${!current_key}" ]; then
         echo "错误：API 密钥 $current_key 未设置"
         exit 1
     fi
     
     echo "执行 fofax 命令..."
-    if ! FOFA_KEY="$$api_key_value" fofax -q "$query" -fs 2000 -fields ip,port,country,region,city,server,title | tail -n +2 >> "$output_file"; then        
+    if ! FOFA_KEY="${!current_key}" fofax -q "$query" -fs 2000 -fields ip,port,country,region,city,server,title | tail -n +2 >> "$output_file"; then          
         echo "查询失败，请检查 API 密钥和网络连接"
         exit 1
     fi
     
-    echo "查询完成，结果已追加到 $output_file"
+    echo "查询完成，结果已追加到 $$output_file"
     file_size=$(wc -c < "$output_file")
     echo "当前输出文件大小: $file_size 字节"
     
