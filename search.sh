@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e  # 遇到错误立即退出
+set -x  # 打印执行的每一行命令
+
 # 检查配置文件
 config_file="config.yaml"
 if [ ! -f "$config_file" ]; then
@@ -7,13 +10,16 @@ if [ ! -f "$config_file" ]; then
     exit 1
 fi
 
-# 读取 API 密钥（假设密钥直接写在配置文件中）
+# 读取 API 密钥
+echo "正在读取 API 密钥..."
 api_keys=($(grep 'FOFA_API_KEY_' "$config_file" | cut -d ':' -f2 | tr -d ' '))
 
 if [ ${#api_keys[@]} -eq 0 ]; then
     echo "错误：未找到有效的 API 密钥"
     exit 1
 fi
+
+echo "找到 $${#api_keys[@]} 个 API 密钥"
 
 # 查询列表
 queries=(
@@ -25,7 +31,7 @@ queries=(
 )
 
 # 创建输出文件
-output_file="fofa_results_$$(date +%Y%m%d_%H%M%S).csv"
+output_file="fofa_results_$(date +%Y%m%d_%H%M%S).csv"
 echo "ip,port,country,region,city,server,title" > "$output_file"
 
 # 执行查询
@@ -35,8 +41,13 @@ for query in "${queries[@]}"; do
     # 选择当前的 API 密钥
     current_key=${api_keys[$key_index]}
     
+    echo "使用 API 密钥: ${current_key:0:5}..." # 只显示密钥的前5个字符
+    
     # 使用当前的 API 密钥执行查询
-    FOFA_KEY="$$current_key" fofax -q "$query" -fs 10000 -fi -fields ip,port,country,region,city,server,title | tail -n +2 >> "$output_file"
+    if ! FOFA_KEY="$current_key" fofax -q "$query" -fs 10000 -fi -fields ip,port,country,region,city,server,title | tail -n +2 >> "$output_file"; then
+        echo "查询失败，请检查 API 密钥和网络连接"
+        exit 1
+    fi
     
     # 切换到下一个 API 密钥
     key_index=$(( (key_index + 1) % ${#api_keys[@]} ))
