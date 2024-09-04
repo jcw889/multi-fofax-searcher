@@ -14,11 +14,11 @@ queries=(
     'server=="cloudflare" && port=="443" && country=="JP" && asn!="13335" && asn!="209242"'
     'server=="cloudflare" && port=="443" && country=="TW" && asn!="13335" && asn!="209242"'
     'server=="cloudflare" && port=="443" && country=="KR" && asn!="13335" && asn!="209242"'
-    'server=="cloudflare" && port=="443" && country=="US" && asn!="13335" && asn!="209242"'
+    'server=="cloudflare" && port=="443" && country=="US" && asn!="13335" && asn!="209242"'  
 )
 echo "设置了 ${#queries[@]} 个查询"
 
-output_file="results/fofa_results_$(date +%Y%m%d_%H%M%S).csv"
+output_file="results/fofa_results_$(date +%Y%m%d_%H%M%S).csv"  
 mkdir -p results
 echo "ip,port,country,region,city,server,title" > "$output_file"
 echo "创建了输出文件: $output_file"
@@ -39,7 +39,7 @@ for query in "${queries[@]}"; do
     fi
     
     echo "执行 fofax 命令..."
-    if ! FOFA_KEY="${!current_key}" fofax -q "$query" -fs 10000 -ff ip,port,country,region,city,server,title | tail -n +2 >> "$output_file"; then
+    if ! FOFA_KEY="${!current_key}" fofax -q "$query" -fs 2000 -ff ip,port,country,region,city,server,title | tail -n +2 >> "$output_file"; then                          
         echo "fofax 命令执行失败，错误代码: $?"
         echo "使用的查询: $query"
         echo "使用的 API 密钥: $current_key"
